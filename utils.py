@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 
-
-
+#from https://github.com/stawel/ht301_hacklib
+#Licensed under GNU General Public License v3.0 (https://github.com/stawel/ht301_hacklib/blob/master/LICENSE) 
 
 def drawTemperature(img, point, T, color = (0,0,0)):
     d1, d2 = 2, 5

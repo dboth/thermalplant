@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+
+#from https://github.com/stawel/ht301_hacklib
+#Licensed under GNU General Public License v3.0 (https://github.com/stawel/ht301_hacklib/blob/master/LICENSE) 
+
 import numpy as np
 import math
 import cv2
