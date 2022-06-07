@@ -121,22 +121,22 @@ class ThermalPlant(QWidget):
         try:
             self.capture = ht301_hacklib.HT301()
         except:
-            self.capture = cv2.VideoCapture(0)
+            self.capture = None
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_stream)
-        self.timer.start(30)
+        self.timer.start(40)
 
     def display_video_stream(self):
         """Read frame from camera and repaint QLabel widget.
         """
         try:
-            _, frame = self.capture.read()
+            #_, frame = self.capture.read()
             try:
                 info, lut = self.capture.info()
                 
             except:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                frame = np.random.randint(255, size=(292,394))
         # Sketchy auto-exposure
             frame = frame.astype(np.float32)
             frame -= frame.min()
