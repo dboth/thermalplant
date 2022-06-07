@@ -134,11 +134,11 @@ class ThermalPlant(QWidget):
             _, frame = self.capture.read()
             try:
                 info, lut = self.capture.info()
+                
             except:
-                (frame,g,b) = cv2.split(frame)
-            frame = frame.astype(np.float32)
-
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Sketchy auto-exposure
+            frame = frame.astype(np.float32)
             frame -= frame.min()
             frame /= frame.max()
             frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
@@ -150,7 +150,7 @@ class ThermalPlant(QWidget):
             except:
                 pass
             #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
-            
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = QImage(frame, frame.shape[1], frame.shape[0], 
                         frame.strides[0], QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(image)
