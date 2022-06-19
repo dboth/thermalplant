@@ -6,9 +6,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PIL import Image
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 import utils
 import ht301_hacklib
@@ -19,6 +19,14 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
+
+class VideoThread(QThread):
+    change_pixmap_signal = pyqtSignal(np.ndarray)
+
+    def __init__(self):
+        super().___init__()
+        self._run_flag = True
+
 
 class ThermalPlant(QWidget):
 
@@ -121,11 +129,11 @@ class ThermalPlant(QWidget):
         try:
             self.capture = ht301_hacklib.HT301()
         except:
-            self.capture = cv2.VideoCapture(0)
+            self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_stream)
-        self.timer.start(30)
+        self.timer.start(100)
 
     def display_video_stream(self):
         """Read frame from camera and repaint QLabel widget.
