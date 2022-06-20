@@ -37,6 +37,7 @@ class VideoThread(QThread):
                 self.capture = cv2.VideoCapture(0)
             except:
                 self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
+            self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
             try:
                 _, frame = self.capture.read()
