@@ -69,7 +69,7 @@ class VideoThread(QThread):
             except Exception as e:
                 print(e)
                 pass
-            time.sleep(0.04)
+            time.sleep(0.12)
         # shut down capture system
         self.capture.release()
 
