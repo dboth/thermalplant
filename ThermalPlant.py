@@ -21,7 +21,8 @@ except ImportError:
     pass
 
 class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(np.ndarray)
+    change_pixmap_signal = pyqtSignal(QImage)
+    change_temperatures_signal = pyqtSignal(np.ndarray)
 
     def __init__(self):
         super().__init__()
@@ -60,11 +61,14 @@ class VideoThread(QThread):
                     pass
                 #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                self.change_pixmap_signal.emit(np.dstack((frame,temperatures)))
+                image = QImage(frame, frame.shape[1], frame.shape[0], 
+                    frame.strides[0], QImage.Format_RGB888)
+                self.change_pixmap_signal.emit(image)
+                self.change_temperatures_signal.emit(temperatures)
             except Exception as e:
                 print(e)
                 pass
-            time.sleep(0.03)
+            time.sleep(0.04)
         # shut down capture system
         self.capture.release()
 
@@ -167,21 +171,25 @@ class ThermalPlant(QWidget):
         self.thread = VideoThread()
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.display_video_stream)
+        self.thread.change_temperatures_signal.connect(self.setTemperatures)
         # start the thread
         self.thread.start()
 
     @pyqtSlot(np.ndarray)
-    def display_video_stream(self,frames):
+    def setTemperatures(self,temps):
+        self.temperatures = temps
+
+    @pyqtSlot(QImage)
+    def display_video_stream(self,image):
         """Read frame from camera and repaint QLabel widget.
         """
-        (r,g,b, temperatures) = cv2.split(frames)
-        frame = np.dstack((r,g,b))
-        self.temperatures = temperatures
-        image = QImage(frame, frame.shape[1], frame.shape[0], 
-                    frame.strides[0], QImage.Format_RGB888)
+        #(r,g,b, temperatures) = cv2.split(frames)
+        #frame = np.dstack((r,g,b))
+        #self.temperatures = temperatures
+        
         pixmap = QPixmap.fromImage(image)
-        currentSize = self.image_label.size()
-        self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
+        #currentSize = self.image_label.size()
+        self.image_label.setPixmap(pixmap)#.scaled(currentSize,Qt.KeepAspectRatio))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
