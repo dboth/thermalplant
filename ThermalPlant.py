@@ -9,6 +9,9 @@ from PIL import Image
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
 
 import utils
 import ht301_hacklib
@@ -19,6 +22,27 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
+
+class GLWidget(QGLWidget):
+    def __init__(self, parent=None):
+        self.parent = parent
+        QGLWidget.__init__(self, parent)
+
+    def initializeGL(self):
+        self.qglClearColor(QColor(0, 0, 255))    # initialize the screen to blue
+        glEnable(GL_DEPTH_TEST) 
+    
+    def resizeGL(self, width, height):
+        glViewport(0, 0, width, height)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        aspect = width / float(height)
+
+        gluPerspective(45.0, aspect, 1.0, 100.0)
+        glMatrixMode(GL_MODELVIEW)
+
+    def paintGL(self):
+	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QImage)
@@ -94,7 +118,7 @@ class ThermalPlant(QWidget):
         self.setWindowTitle("Thermal Plant v0.1")
         self.folder = str(Path.home())
 
-        self.image_label = QLabel()
+        self.image_label = GLWidget(self)
         self.image_label.setMinimumSize(self.video_size)
         #self.image_label.setFixedSize(self.video_size)
         self.image_label.setStyleSheet("border: 1px solid #aaa; background-color: black")
