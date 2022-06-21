@@ -24,25 +24,78 @@ except ImportError:
     pass
 
 class GLWidget(QOpenGLWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, width=1280, height=720):
         self.parent = parent
+        self.width = width
+        self.height = height
+        self.nRange = 1.0
+        self.image = np.random.rand(width, height,3) * 255
         QOpenGLWidget.__init__(self, parent)
 
     def initializeGL(self):
-        self.qglClearColor(QColor(0, 0, 255))    # initialize the screen to blue
-        glEnable(GL_DEPTH_TEST) 
+        glClearColor(0.0, 0.0, 0.0, 1.0) 
     
-    def resizeGL(self, width, height):
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        aspect = width / float(height)
+    def resizeGL(self, w, h):
+        if h == 0:
+            h = 1
 
-        gluPerspective(45.0, aspect, 1.0, 100.0)
+        nRange = 1.0
+
+        glViewport(0, 0, w, h)
+        glMatrixMode(GL_PROJECTION)
+
+        glLoadIdentity()
+        # allows for reshaping the window without distoring shape
+
+        if w <= h:
+            glOrtho(-nRange, nRange, -nRange*h/w, nRange*h/w, -nRange, nRange)
+        else:
+            glOrtho(-nRange*w/h, nRange*w/h, -nRange, nRange, -nRange, nRange)
+
         glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
 
     def paintGL(self):
-	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glEnable(GL_TEXTURE_2D)
+        #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        #glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+        #this one is necessary with texture2d for some reason
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
+        # Set Projection Matrix
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluOrtho2D(0, self.width, 0, self.height)
+
+        # Switch to Model View Matrix
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+        # Draw textured Quads
+        glBegin(GL_QUADS)
+        glTexCoord2f(0.0, 0.0)
+        glVertex2f(0.0, 0.0)
+        glTexCoord2f(1.0, 0.0)
+        glVertex2f(self.width, 0.0)
+        glTexCoord2f(1.0, 1.0)
+        glVertex2f(self.width, self.height)
+        glTexCoord2f(0.0, 1.0)
+        glVertex2f(0.0, self.height)
+        glEnd()
+
+        glFlush()
+        glutSwapBuffers()
+        glTexImage2D(GL_TEXTURE_2D, 
+            0, 
+            GL_RGB, 
+            self.width,self.height,
+            0,
+            GL_RGB, 
+            GL_UNSIGNED_BYTE, 
+            self.image)
+        glutPostRedisplay()
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QImage)
@@ -118,7 +171,7 @@ class ThermalPlant(QWidget):
         self.setWindowTitle("Thermal Plant v0.1")
         self.folder = str(Path.home())
 
-        self.image_label = GLWidget(self)
+        self.image_label = GLWidget(self,self.video_size.width(),self.video_size.height())
         self.image_label.setMinimumSize(self.video_size)
         #self.image_label.setFixedSize(self.video_size)
         self.image_label.setStyleSheet("border: 1px solid #aaa; background-color: black")
