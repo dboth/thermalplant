@@ -126,7 +126,7 @@ class ThermalPlant(QWidget):
             QSizePolicy.MinimumExpanding,
             QSizePolicy.MinimumExpanding
         )
-        self.image_label.setAlignment(Qt.AlignCenter)
+        #self.image_label.setAlignment(Qt.AlignCenter)
 
         self.folderWidget = QLineEdit();
         self.folderWidget.setReadOnly(True)
