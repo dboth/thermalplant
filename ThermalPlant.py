@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, re, sys, time
+import os, re, sys, time, qimage2ndarray
 from pathlib import Path
 
 import cv2
@@ -62,8 +62,7 @@ class VideoThread(QThread):
                     pass
                 #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                image = QImage(frame, frame.shape[1], frame.shape[0], 
-                    frame.strides[0], QImage.Format_RGB888)
+                image = qimage2ndarray.array2qimage(frame)
                 self.change_pixmap_signal.emit(image)
                 self.change_temperatures_signal.emit(temperatures)
             except Exception as e:
@@ -125,11 +124,11 @@ class ThermalPlant(QWidget):
         self.main_layout.addWidget(self.createIconButton("Choose target folder","SP_DirIcon",self.selectFolder,30),0,4)
         #self.main_layout.addWidget(self.createIconButton("Calibrate","SP_BrowserReload",self.calibrate,30),0,5)
 
-        self.main_layout.addWidget(self.nameWidget,2,0,1,5)
-        self.main_layout.addWidget(self.createIconButton("Save image","SP_DialogSaveButton",self.photo,50),2,5)
+        self.main_layout.addWidget(self.nameWidget,2,0,1,4)
+        self.main_layout.addWidget(self.createIconButton("Save image","SP_DialogSaveButton",self.photo,50),2,4)
 
         #self.main_layout.addLayout(self.top_row)
-        self.main_layout.addWidget(self.image_label,1,0,1,6)
+        self.main_layout.addWidget(self.image_label,1,0,1,5)
         #self.main_layout.addLayout(self.bottom_row)
 
         self.setLayout(self.main_layout)
@@ -189,8 +188,8 @@ class ThermalPlant(QWidget):
         #self.temperatures = temperatures
         
         pixmap = QPixmap.fromImage(image)
-        #currentSize = self.image_label.size()
-        self.image_label.setPixmap(pixmap)#.scaled(currentSize,Qt.KeepAspectRatio))
+        currentSize = self.image_label.size()
+        self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
