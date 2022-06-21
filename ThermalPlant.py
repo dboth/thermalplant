@@ -213,7 +213,7 @@ class ThermalPlant(QWidget):
         
         pixmap = QPixmap.fromImage(image)
         currentSize = self.image_label.size()
-        self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
+        #self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
