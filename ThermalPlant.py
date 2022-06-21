@@ -34,28 +34,6 @@ class GLWidget(QOpenGLWidget):
 
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0) 
-    
-    def resizeGL(self, w, h):
-        if h == 0:
-            h = 1
-
-        nRange = 1.0
-
-        glViewport(0, 0, w, h)
-        glMatrixMode(GL_PROJECTION)
-
-        glLoadIdentity()
-        # allows for reshaping the window without distoring shape
-
-        if w <= h:
-            glOrtho(-nRange, nRange, -nRange*h/w, nRange*h/w, -nRange, nRange)
-        else:
-            glOrtho(-nRange*w/h, nRange*w/h, -nRange, nRange, -nRange, nRange)
-
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
-    def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_TEXTURE_2D)
         #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -86,7 +64,28 @@ class GLWidget(QOpenGLWidget):
         glEnd()
 
         glFlush()
-        glutSwapBuffers()
+    
+    def resizeGL(self, w, h):
+        if h == 0:
+            h = 1
+
+        nRange = 1.0
+
+        glViewport(0, 0, w, h)
+        glMatrixMode(GL_PROJECTION)
+
+        glLoadIdentity()
+        # allows for reshaping the window without distoring shape
+
+        if w <= h:
+            glOrtho(-nRange, nRange, -nRange*h/w, nRange*h/w, -nRange, nRange)
+        else:
+            glOrtho(-nRange*w/h, nRange*w/h, -nRange, nRange, -nRange, nRange)
+
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+    def paintGL(self):
         glTexImage2D(GL_TEXTURE_2D, 
             0, 
             GL_RGB, 
@@ -95,7 +94,6 @@ class GLWidget(QOpenGLWidget):
             GL_RGB, 
             GL_UNSIGNED_BYTE, 
             self.image)
-        glutPostRedisplay()
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QImage)
