@@ -26,7 +26,7 @@ except ImportError:
 class GLWidget(QOpenGLWidget):
     def __init__(self, parent=None):
         self.parent = parent
-        QGLWidget.__init__(self, parent)
+        QOpenGLWidget.__init__(self, parent)
 
     def initializeGL(self):
         self.qglClearColor(QColor(0, 0, 255))    # initialize the screen to blue
