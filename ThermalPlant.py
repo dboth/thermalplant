@@ -23,7 +23,7 @@ try:
 except ImportError:
     pass
 
-class GLWidget(QGLWidget):
+class GLWidget(QOpenGLWidget):
     def __init__(self, parent=None):
         self.parent = parent
         QGLWidget.__init__(self, parent)
