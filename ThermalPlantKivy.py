@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, re, sys, time
+import os, re, sys, time, threading
 from pathlib import Path
 
 import cv2
@@ -82,50 +82,54 @@ class VideoThread(QThread):
         self.wait()
 '''
 
-class KivyCamera(Kimage):
+class KivyCamera(Widget):
     source = 0
     fps = 30
 
     def __init__(self):
         super(KivyCamera, self).__init__()
-        self._capture = None
-        if self.source is not None:
-            self._capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
-        Clock.schedule_interval(self.update, 1.0 / self.fps)
+        with self.canvas:
+            #Color(1, 0, 0, 1)
+            self.bg = Rectangle(pos=self.pos, size=self.size)
 
-    def on_source(self, *args):
-        if self._capture is not None:
-            self._capture.release()
-        self._capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
+        self.bind(pos=self.update_bg)
+        self.bind(size=self.update_bg)
+        threading.Thread(target=self.doit, daemon=True).start()
 
-    @property
-    def capture(self):
-        return self._capture
+    def doit(self):
+        self.do_vid = True
+        frame=None
+        cam=cv2.VideoCapture(0)#-1, cv2.CAP_V4L)
 
-    def update(self, dt):
-        ret, frame = self.capture.read()
-        if ret:
-            buf1 = cv2.flip(frame, 0)
-            buf = buf1.tostring()
-            image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt="bgr"
-            )
-            image_texture.blit_buffer(buf, colorfmt="bgr", bufferfmt="ubyte")
-            self.texture = image_texture
+        while (self.do_vid):
+            ret, frame = cam.read()
+            Clock.schedule_once(partial(self.update, frame))
+            time.sleep(0.04)
+        cam.release()
+    
+    def update_bg(self, *args):
+        self.bg.pos = self.pos
+        self.bg.size = self.size
+
+    def update(self, frame, dt):
+        buf1 = cv2.flip(frame, 0)
+        buf = buf1.tostring()
+        image_texture = Texture.create(
+            size=(frame.shape[1], frame.shape[0]), colorfmt="bgr"
+        )
+        image_texture.blit_buffer(buf, colorfmt="bgr", bufferfmt="ubyte")
+        self.bg.texture = image_texture
 
 class MyBackground(Widget):
     def __init__(self, **kwargs):
         super(MyBackground, self).__init__(**kwargs)
         with self.canvas:
-            Color(1, 0, 0, 1)
+            #Color(1, 0, 0, 1)
             self.bg = Rectangle(source='water.png', pos=self.pos, size=self.size)
 
         self.bind(pos=self.update_bg)
         self.bind(size=self.update_bg)
 
-    def update_bg(self, *args):
-        self.bg.pos = self.pos
-        self.bg.size = self.size
 
 class ThermalPlant(App):
 
