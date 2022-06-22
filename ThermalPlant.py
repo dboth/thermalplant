@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from ensurepip import version
 import os, re, sys, time, qimage2ndarray
 from pathlib import Path
 
@@ -9,9 +10,9 @@ from PIL import Image
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
+#from OpenGL.GL import *
+#from OpenGL.GLU import *
+#from OpenGL.GLUT import *
 
 import utils
 import ht301_hacklib
@@ -28,79 +29,94 @@ class GLWidget(QOpenGLWidget):
         self.parent = parent
         self.width = width
         self.height = height
-        self.nRange = 1.0
-        self.image = np.random.rand(width, height,3) * 255
         QOpenGLWidget.__init__(self, parent)
 
+    def sizeHint(self):
+        return QSize(self.width,self.height)
+
+    def setImage(self,image):
+        self.image = np.flipud(image).flatten().tobytes()
+        #print(self.image)
+
+        self._idle()
+
     def initializeGL(self):
-        glClearColor(0.0, 0.0, 0.0, 1.0) 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glEnable(GL_TEXTURE_2D)
-        #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        #glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-        #this one is necessary with texture2d for some reason
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        version_profile = QOpenGLVersionProfile()
+        version_profile.setVersion(2,0)
+        self.gl = self.context().versionFunctions(version_profile)
+        self.gl.glClearColor(0.0, 0.0, 0.0, 1.0) 
+        self.setImage(np.zeros((self.width, self.height,3)))
+        #self.setImage((np.random.rand(self.width,self.height,3)*255).astype(np.uint8))
 
-        # Set Projection Matrix
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluOrtho2D(0, self.width, 0, self.height)
+    def _idle(self):
+        #print("IDLE")
+        
+        self.update()
 
-        # Switch to Model View Matrix
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+    def _display(self):
+        #print("DISPLAY")
+        self.gl.glClear(self.gl.GL_COLOR_BUFFER_BIT | self.gl.GL_DEPTH_BUFFER_BIT)
+        self.gl.glEnable(self.gl.GL_TEXTURE_2D)
+        self.gl.glTexParameterf(self.gl.GL_TEXTURE_2D, self.gl.GL_TEXTURE_MIN_FILTER, self.gl.GL_NEAREST)
+        
+        self.gl.glMatrixMode(self.gl.GL_PROJECTION)
+        self.gl.glLoadIdentity()
+        self.gl.glOrtho(0, self.width, 0, self.height,-1,1)
+        
+        self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
+        self.gl.glLoadIdentity()    
 
-        # Draw textured Quads
-        glBegin(GL_QUADS)
-        glTexCoord2f(0.0, 0.0)
-        glVertex2f(0.0, 0.0)
-        glTexCoord2f(1.0, 0.0)
-        glVertex2f(self.width, 0.0)
-        glTexCoord2f(1.0, 1.0)
-        glVertex2f(self.width, self.height)
-        glTexCoord2f(0.0, 1.0)
-        glVertex2f(0.0, self.height)
-        glEnd()
+        self.gl.glBegin(self.gl.GL_QUADS)
+        self.gl.glTexCoord2f(0.0, 0.0)
+        self.gl.glVertex2f(0.0, 0.0)
+        self.gl.glTexCoord2f(1.0, 0.0)
+        self.gl.glVertex2f(self.width, 0.0)
+        self.gl.glTexCoord2f(1.0, 1.0)
+        self.gl.glVertex2f(self.width, self.height)
+        self.gl.glTexCoord2f(0.0, 1.0)
+        self.gl.glVertex2f(0.0, self.height)
+        self.gl.glEnd()
+        self.gl.glPixelStorei(self.gl.GL_UNPACK_ALIGNMENT, 1)
+        self.gl.glTexImage2D(self.gl.GL_TEXTURE_2D, 
+            0, 
+            self.gl.GL_RGB, 
+            self.width,self.height,
+            0,
+            self.gl.GL_RGB, 
+            self.gl.GL_UNSIGNED_BYTE, 
+            self.image)
+        self.gl.glFlush()
 
-        glFlush()
-    
     def resizeGL(self, w, h):
         if h == 0:
             h = 1
 
-        nRange = 1.0
+        self.gl.glViewport(0, 0, w, h)
+        self.gl.glMatrixMode(self.gl.GL_PROJECTION)
 
-        glViewport(0, 0, w, h)
-        glMatrixMode(GL_PROJECTION)
-
-        glLoadIdentity()
-        # allows for reshaping the window without distoring shape
-
+        self.gl.glLoadIdentity()
+        
         if w <= h:
-            glOrtho(-nRange, nRange, -nRange*h/w, nRange*h/w, -nRange, nRange)
+            self.gl.glOrtho(-1, 1, -1*h/w, h/w, -1, 1)
         else:
-            glOrtho(-nRange*w/h, nRange*w/h, -nRange, nRange, -nRange, nRange)
+            self.gl.glOrtho(0, w, 0, h, -1, 1)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
+        self.gl.glLoadIdentity()
+        self.update()
 
     def paintGL(self):
-        glTexImage2D(GL_TEXTURE_2D, 
-            0, 
-            GL_RGB, 
-            self.width,self.height,
-            0,
-            GL_RGB, 
-            GL_UNSIGNED_BYTE, 
-            self.image)
+        self._display()
+        
+        
 
 class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(QImage)
+    change_pixmap_signal = pyqtSignal(np.ndarray)
     change_temperatures_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self):
+    def __init__(self,video_size):
         super().__init__()
+        self.video_size = video_size
         self._run_flag = True
 
     def run(self):
@@ -135,10 +151,10 @@ class VideoThread(QThread):
                     utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
                 except:
                     pass
-                #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
+                frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                image = qimage2ndarray.array2qimage(frame)
-                self.change_pixmap_signal.emit(image)
+                #image = qimage2ndarray.array2qimage(frame)
+                self.change_pixmap_signal.emit(frame)
                 self.change_temperatures_signal.emit(temperatures)
             except Exception as e:
                 print(e)
@@ -157,7 +173,7 @@ class ThermalPlant(QWidget):
 
     def __init__(self):
         QWidget.__init__(self)
-        self.video_size = QSize(394,292)
+        self.video_size = QSize(788,584)
         self.temperatures = np.array([])
         self.setup_ui()
         self.setup_camera()
@@ -243,7 +259,7 @@ class ThermalPlant(QWidget):
     def setup_camera(self):
         """Initialize camera.
         """
-        self.thread = VideoThread()
+        self.thread = VideoThread(self.video_size)
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.display_video_stream)
         self.thread.change_temperatures_signal.connect(self.setTemperatures)
@@ -254,17 +270,14 @@ class ThermalPlant(QWidget):
     def setTemperatures(self,temps):
         self.temperatures = temps
 
-    @pyqtSlot(QImage)
+    @pyqtSlot(np.ndarray)
     def display_video_stream(self,image):
         """Read frame from camera and repaint QLabel widget.
         """
         #(r,g,b, temperatures) = cv2.split(frames)
         #frame = np.dstack((r,g,b))
         #self.temperatures = temperatures
-        
-        pixmap = QPixmap.fromImage(image)
-        currentSize = self.image_label.size()
-        #self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
+        self.image_label.setImage(image)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
