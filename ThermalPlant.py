@@ -101,7 +101,7 @@ class GLWidget(QOpenGLWidget):
         else:
             self.gl.glOrtho(0, w, 0, h, -1, 1)
 
-        self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
+        #self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
         self.gl.glLoadIdentity()
         self.update()
 
