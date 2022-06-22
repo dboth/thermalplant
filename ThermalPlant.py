@@ -88,7 +88,7 @@ class ThermalPlant(QWidget):
 
     def __init__(self):
         QWidget.__init__(self)
-        self.video_size = QSize(788,584)
+        self.video_size = QSize(788/2,584/2)
         self.temperatures = np.array([])
         self.setup_ui()
         self.setup_camera()
