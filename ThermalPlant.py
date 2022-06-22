@@ -22,83 +22,10 @@ try:
     myappid = 'de.uni-heidelberg.cos.thermalplant.100'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
-    pass
-
-class GLWidget(QOpenGLWidget):
-    def __init__(self, parent=None, width=1280, height=720):
-        self.parent = parent
-        self.width = width
-        self.height = height
-        QOpenGLWidget.__init__(self, parent)
-
-    def sizeHint(self):
-        return QSize(self.width,self.height)
-
-    def setImage(self,image):
-        self.image = np.flipud(image).flatten().tobytes()
-        #print(self.image)
-
-        self._idle()
-
-    def initializeGL(self):
-        version_profile = QOpenGLVersionProfile()
-        version_profile.setVersion(2,0)
-        self.gl = self.context().versionFunctions(version_profile)
-        print(self.gl)
-        self.gl.glClearColor(0.0, 0.0, 0.0, 1.0) 
-        self.setImage(np.zeros((self.width, self.height,3)))
-        print(self.gl.glGetString(self.gl.GL_VERSION))
-        #self.setImage((np.random.rand(self.width,self.height,3)*255).astype(np.uint8))
-
-    def _idle(self):
-        #print("IDLE")
-        
-        self.update()
-
-    def _display(self):
-        #print("DISPLAY")
-        self.gl.glClear(self.gl.GL_COLOR_BUFFER_BIT | self.gl.GL_DEPTH_BUFFER_BIT)
-        self.gl.glEnable(self.gl.GL_TEXTURE_2D)
-        self.gl.glTexParameterf(self.gl.GL_TEXTURE_2D, self.gl.GL_TEXTURE_MIN_FILTER, self.gl.GL_NEAREST)
-        
-        #self.gl.glMatrixMode(self.gl.GL_PROJECTION)
-        #self.gl.glLoadIdentity()
-        #self.gl.glOrtho(0, self.width, 0, self.height,-1,1)
-        
-        #self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
-        #self.gl.glLoadIdentity()    
-
-        self.gl.glBegin(self.gl.GL_QUADS)
-        self.gl.glTexCoord2f(0.0, 0.0)
-        self.gl.glVertex2f(0.0, 0.0)
-        self.gl.glTexCoord2f(1.0, 0.0)
-        self.gl.glVertex2f(self.width, 0.0)
-        self.gl.glTexCoord2f(1.0, 1.0)
-        self.gl.glVertex2f(self.width, self.height)
-        self.gl.glTexCoord2f(0.0, 1.0)
-        self.gl.glVertex2f(0.0, self.height)
-        self.gl.glEnd()
-        self.gl.glPixelStorei(self.gl.GL_UNPACK_ALIGNMENT, 1)
-        self.gl.glTexImage2D(self.gl.GL_TEXTURE_2D, 
-            0, 
-            self.gl.GL_RGB, 
-            self.width,self.height,
-            0,
-            self.gl.GL_RGB, 
-            self.gl.GL_UNSIGNED_BYTE, 
-            self.image)
-        self.gl.glFlush()
-
-    def resizeGL(self, w, h):
-        self.update()
-
-    def paintGL(self):
-        self._display()
-        
-        
+    pass      
 
 class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(np.ndarray)
+    change_pixmap_signal = pyqtSignal(QPixmap)
     change_temperatures_signal = pyqtSignal(np.ndarray)
 
     def __init__(self,video_size):
@@ -140,8 +67,9 @@ class VideoThread(QThread):
                     pass
                 frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                #image = qimage2ndarray.array2qimage(frame)
-                self.change_pixmap_signal.emit(frame)
+                image = qimage2ndarray.array2qimage(frame)
+                pixmap = QPixmap.fromImage(image)
+                self.change_pixmap_signal.emit(pixmap)
                 self.change_temperatures_signal.emit(temperatures)
             except Exception as e:
                 print(e)
@@ -172,7 +100,7 @@ class ThermalPlant(QWidget):
         self.setWindowTitle("Thermal Plant v0.1")
         self.folder = str(Path.home())
 
-        self.image_label = GLWidget(self,self.video_size.width(),self.video_size.height())
+        self.image_label = QLabel()
         self.image_label.setMinimumSize(self.video_size)
         #self.image_label.setFixedSize(self.video_size)
         self.image_label.setStyleSheet("border: 1px solid #aaa; background-color: black")
@@ -180,7 +108,7 @@ class ThermalPlant(QWidget):
             QSizePolicy.MinimumExpanding,
             QSizePolicy.MinimumExpanding
         )
-        #self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setAlignment(Qt.AlignCenter)
 
         self.folderWidget = QLineEdit();
         self.folderWidget.setReadOnly(True)
@@ -257,14 +185,17 @@ class ThermalPlant(QWidget):
     def setTemperatures(self,temps):
         self.temperatures = temps
 
-    @pyqtSlot(np.ndarray)
-    def display_video_stream(self,image):
+    @pyqtSlot(QPixmap)
+    def display_video_stream(self,pixmap):
         """Read frame from camera and repaint QLabel widget.
         """
         #(r,g,b, temperatures) = cv2.split(frames)
         #frame = np.dstack((r,g,b))
         #self.temperatures = temperatures
-        self.image_label.setImage(image)
+        
+        
+        #currentSize = self.image_label.size()
+        self.image_label.setPixmap(pixmap)#.scaled(currentSize,Qt.KeepAspectRatio))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
