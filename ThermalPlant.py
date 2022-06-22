@@ -46,6 +46,7 @@ class GLWidget(QOpenGLWidget):
         self.gl = self.context().versionFunctions(version_profile)
         self.gl.glClearColor(0.0, 0.0, 0.0, 1.0) 
         self.setImage(np.zeros((self.width, self.height,3)))
+        print(self.gl.glGetString(self.gl.GL_VERSION))
         #self.setImage((np.random.rand(self.width,self.height,3)*255).astype(np.uint8))
 
     def _idle(self):
