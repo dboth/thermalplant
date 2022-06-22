@@ -36,29 +36,31 @@ class VideoThread(QThread):
     def run(self):
         # capture from web cam
         try:
-            self.capture = ht301_hacklib.HT301()
+            self.thermal = ht301_hacklib.HT301()
         except:
-            try:
-                self.capture = cv2.VideoCapture(0)
-            except:
-                self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
-            self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
+            pass
+        try:
+            self.capture = cv2.VideoCapture(0)
+        except:
+            self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
             try:
                 _, frame = self.capture.read()
                 try:
-                    info, lut = self.capture.info()
-                    temperatures = lut[frame]
+                    _, tframe = self.thermal.read()
+                    info, lut = self.thermal.info()
+                    temperatures = lut[tframe]
                 except:
-                    frame, g,b = cv2.split(frame)
                     temperatures = frame
                     #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             # Sketchy auto-exposure
-                frame = frame.astype(np.float32)
-                frame -= frame.min()
-                frame /= frame.max()
-                frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
-                frame = cv2.applyColorMap(frame, cv2.COLORMAP_INFERNO)
+                if False:
+                    frame = frame.astype(np.float32)
+                    frame -= frame.min()
+                    frame /= frame.max()
+                    frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
+                    frame = cv2.applyColorMap(frame, cv2.COLORMAP_INFERNO)
                 try:
                     utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
                     utils.drawTemperature(frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
@@ -88,7 +90,7 @@ class ThermalPlant(QWidget):
 
     def __init__(self):
         QWidget.__init__(self)
-        self.video_size = QSize(788/2,584/2)
+        self.video_size = QSize(int(788/2),int(584/2))
         self.temperatures = np.array([])
         self.setup_ui()
         self.setup_camera()
@@ -196,8 +198,8 @@ class ThermalPlant(QWidget):
         #self.temperatures = temperatures
         
         
-        #currentSize = self.image_label.size()
-        self.image_label.setPixmap(pixmap)#.scaled(currentSize,Qt.KeepAspectRatio))
+        currentSize = self.image_label.size()
+        self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
