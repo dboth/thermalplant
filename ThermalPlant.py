@@ -126,18 +126,19 @@ class ThermalPlant(QWidget):
 
         self.main_layout = QGridLayout()
 
-        self.main_layout.addWidget(self.folderWidget,0,0,1,4)
-        self.main_layout.addWidget(self.createIconButton("Choose target folder","SP_DirIcon",self.selectFolder,30),0,4)
+        #self.main_layout.addWidget(self.folderWidget,0,0,1,4)
+        #self.main_layout.addWidget(self.createIconButton("Choose target folder","SP_DirIcon",self.selectFolder,30),0,4)
         #self.main_layout.addWidget(self.createIconButton("Calibrate","SP_BrowserReload",self.calibrate,30),0,5)
 
-        self.main_layout.addWidget(self.nameWidget,2,0,1,4)
-        self.main_layout.addWidget(self.createIconButton("Save image","SP_DialogSaveButton",self.photo,50),2,4)
+        #self.main_layout.addWidget(self.nameWidget,2,0,1,4)
+        self.main_layout.addWidget(self.createIconButton("Save image","SP_DialogSaveButton",self.photo,50),0,1)
 
         #self.main_layout.addLayout(self.top_row)
-        self.main_layout.addWidget(self.image_label,1,0,1,5)
+        self.main_layout.addWidget(self.image_label,0,0,4,1)
         #self.main_layout.addLayout(self.bottom_row)
 
         self.setLayout(self.main_layout)
+        self.showMaximized()
 
     def createIconButton(self,text,icon,action,height):
         button = QPushButton("")
