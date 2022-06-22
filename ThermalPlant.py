@@ -102,7 +102,7 @@ class ThermalPlant(QWidget):
 
         self.image_label = QLabel()
         self.image_label.setMinimumSize(self.video_size)
-        self.image_label.setFixedSize(self.video_size)
+        #self.image_label.setFixedSize(self.video_size)
         self.image_label.setStyleSheet("border: 1px solid #aaa; background-color: black")
         self.image_label.setSizePolicy(
             QSizePolicy.MinimumExpanding,
@@ -147,6 +147,7 @@ class ThermalPlant(QWidget):
         icon = self.style().standardIcon(pixmapi)
         button.setIcon(icon)
         button.setFixedHeight(height)
+        button.setFixedWidth(height)
         button.clicked.connect(action)
         return button
 
