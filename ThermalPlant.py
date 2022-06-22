@@ -62,11 +62,11 @@ class GLWidget(QOpenGLWidget):
         self.gl.glTexParameterf(self.gl.GL_TEXTURE_2D, self.gl.GL_TEXTURE_MIN_FILTER, self.gl.GL_NEAREST)
         
         #self.gl.glMatrixMode(self.gl.GL_PROJECTION)
-        self.gl.glLoadIdentity()
+        #self.gl.glLoadIdentity()
         self.gl.glOrtho(0, self.width, 0, self.height,-1,1)
         
         #self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
-        self.gl.glLoadIdentity()    
+        #self.gl.glLoadIdentity()    
 
         self.gl.glBegin(self.gl.GL_QUADS)
         self.gl.glTexCoord2f(0.0, 0.0)
