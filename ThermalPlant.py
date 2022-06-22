@@ -88,21 +88,6 @@ class GLWidget(QOpenGLWidget):
         self.gl.glFlush()
 
     def resizeGL(self, w, h):
-        if h == 0:
-            h = 1
-
-        self.gl.glViewport(0, 0, w, h)
-        self.gl.glMatrixMode(self.gl.GL_PROJECTION)
-
-        self.gl.glLoadIdentity()
-        
-        if w <= h:
-            self.gl.glOrtho(-1, 1, -1*h/w, h/w, -1, 1)
-        else:
-            self.gl.glOrtho(0, w, 0, h, -1, 1)
-
-        #self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
-        self.gl.glLoadIdentity()
         self.update()
 
     def paintGL(self):
