@@ -246,7 +246,7 @@ class ThermalPlant(QWidget):
         for folder in os.listdir(directory):
             xxx = os.path.join(directory,folder)
             if os.path.isdir(xxx):
-                return str(xxx)
+                return xxx.decode("utf-8") 
         return str(Path.home())
 
     @pyqtSlot(np.ndarray,np.ndarray)
