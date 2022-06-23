@@ -53,6 +53,7 @@ class VideoThread(QThread):
         while self._run_flag:
             if self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
+                print(original_camera_frame)
             if self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
                 info, lut = self.thermal.info()
