@@ -67,15 +67,15 @@ class VideoThread(QThread):
         video_dev = self.find_device()
         self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
-        outputRequested = False
+        outputRequested = 0
         while self._run_flag:
-            if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
+            if outputRequested != 0 or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
                 original_camera_frame = cv2.rotate(original_camera_frame, cv2.ROTATE_180)
-            if True or outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
+            if outputRequested != 0 or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
                 info, lut = self.thermal.info()
-                if outputRequested:
+                if outputRequested != 0:
                     temperatures = (lut[thermal_frame])[::-1,::-1]
             
             if self.mode == "THERMAL" or self.mode == "BOTH":
@@ -101,7 +101,7 @@ class VideoThread(QThread):
                 pass
 
             
-            if outputRequested:
+            if outputRequested == 1:
                 self.change_output_signal.emit(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
                 outputRequested = False
                 frame = (np.ones((292,394,3))*255).astype(np.uint)
@@ -111,8 +111,11 @@ class VideoThread(QThread):
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
             self.mode = self.nextMode
-            outputRequested = self.outputRequested
-            self.outputRequested = False
+            if self.outputRequested:
+                outputRequested = 5
+                self.outputRequested = False
+            if outputRequested != 0:
+                outputRequested -= 1
             time.sleep(0.04)
         self.capture.release()
 
