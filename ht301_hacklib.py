@@ -255,6 +255,7 @@ class HT301:
         self.cap.set(cv2.CAP_PROP_CONVERT_RGB, 0)
         # Use raw mode
         self.cap.set(cv2.CAP_PROP_ZOOM, 0x8004)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
         # Calibrate
         self.calibrate()
         #? enable thermal data - not needed
