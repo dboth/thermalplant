@@ -77,11 +77,13 @@ class VideoThread(QThread):
                     temperatures = lut[thermal_frame]
             
             if self.mode == "THERMAL" or self.mode == "BOTH":
+                thermal_frame = thermal_frame[::-1,::-1]
                 thermal_frame = thermal_frame.astype(np.float32)
                 thermal_frame -= thermal_frame.min()
                 thermal_frame /= thermal_frame.max()
                 thermal_frame = (np.clip(thermal_frame, 0, 1)*255).astype(np.uint8)
                 thermal_frame = cv2.applyColorMap(thermal_frame, cv2.COLORMAP_INFERNO)
+                thermal_frame = cv2.rotate(thermal_frame, cv2.cv2.ROTATE_180)
                 utils.drawTemperature(thermal_frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
                 utils.drawTemperature(thermal_frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
                 utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
