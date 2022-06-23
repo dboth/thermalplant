@@ -26,58 +26,67 @@ except ImportError:
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QPixmap)
-    change_temperatures_signal = pyqtSignal(np.ndarray)
+    change_output_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self,video_size):
+    def __init__(self,video_size,mode):
         super().__init__()
         self.video_size = video_size
         self._run_flag = True
+        self.mode = mode
+        self.outputRequested = False
+
+    def requestOutput(self):
+        self.outputRequested = True
+
+    def setMode(self,mode):
+        self.mode = mode
 
     def run(self):
-        # capture from web cam
-        try:
-            self.thermal = ht301_hacklib.HT301()
-        except:
-            pass
+        
+        self.thermal = ht301_hacklib.HT301()
         try:
             self.capture = cv2.VideoCapture(0)
         except:
             self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
-            try:
-                _, frame = self.capture.read()
-                try:
-                    _, tframe = self.thermal.read()
-                    info, lut = self.thermal.info()
-                    temperatures = lut[tframe]
-                except:
-                    temperatures = frame
-                    #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # Sketchy auto-exposure
-                if False:
-                    frame = frame.astype(np.float32)
-                    frame -= frame.min()
-                    frame /= frame.max()
-                    frame = (np.clip(frame, 0, 1)*255).astype(np.uint8)
-                    frame = cv2.applyColorMap(frame, cv2.COLORMAP_INFERNO)
-                try:
-                    utils.drawTemperature(frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
-                    utils.drawTemperature(frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
-                    utils.drawTemperature(frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
-                except:
-                    pass
-                frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                image = qimage2ndarray.array2qimage(frame)
-                pixmap = QPixmap.fromImage(image)
-                self.change_pixmap_signal.emit(pixmap)
-                self.change_temperatures_signal.emit(temperatures)
-            except Exception as e:
-                print(e)
+            if self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
+                _, original_camera_frame = self.capture.read()
+            if self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
+                _, thermal_frame = self.thermal.read()
+                info, lut = self.thermal.info()
+                if self.outputRequested:
+                    temperatures = lut[thermal_frame]
+            
+            if self.mode == "THERMAL" or self.mode == "BOTH":
+                thermal_frame = thermal_frame.astype(np.float32)
+                thermal_frame -= thermal_frame.min()
+                thermal_frame /= thermal_frame.max()
+                thermal_frame = (np.clip(thermal_frame, 0, 1)*255).astype(np.uint8)
+                thermal_frame = cv2.applyColorMap(thermal_frame, cv2.COLORMAP_INFERNO)
+                utils.drawTemperature(thermal_frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
+                utils.drawTemperature(thermal_frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
+                utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
+                thermal_frame = cv2.cvtColor(thermal_frame, cv2.COLOR_BGR2RGB)  
+
+            if self.mode == "CAMERA" or self.mode == "BOTH":
+                camera_frame = original_camera_frame
+
+            if self.mode == "THERMAL":
+                frame = thermal_frame
+            elif self.mode == "CAMERA":
+                frame = camera_frame
+            elif self.mode == "BOTH":
+                #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 pass
-            time.sleep(0.12)
-        # shut down capture system
+            
+            if self.outputRequested:
+                self.change_output_signal(np.dstack((original_camera_frame,temperatures)))
+                self.outputRequested = False
+            image = qimage2ndarray.array2qimage(frame)
+            pixmap = QPixmap.fromImage(image)
+            self.change_pixmap_signal.emit(pixmap)
+            time.sleep(0.6)
         self.capture.release()
 
     def stop(self):
@@ -87,11 +96,17 @@ class VideoThread(QThread):
 
 
 class ThermalPlant(QWidget):
+    mode = "THERMAL"
 
     def __init__(self):
         QWidget.__init__(self)
-        self.video_size = QSize(int(788/2),int(584/2))
-        self.temperatures = np.array([])
+        self.video_size = QSize(394,292)
+        self.icons = {
+            "photo": QIcon("icons/photo.png"),
+            "mode_CAMERA": QIcon("icons/mode_camera.png"),
+            "mode_THERMAL": QIcon("icons/mode_thermal.png"),
+            "mode_BOTH": QIcon("icons/mode_both.png") 
+        }
         self.setup_ui()
         self.setup_camera()
 
@@ -104,7 +119,6 @@ class ThermalPlant(QWidget):
 
         self.image_label = QLabel()
         self.image_label.setMinimumSize(self.video_size)
-        #self.image_label.setFixedSize(self.video_size)
         self.image_label.setStyleSheet("border: 1px solid #aaa; background-color: black")
         self.image_label.setSizePolicy(
             QSizePolicy.MinimumExpanding,
@@ -112,42 +126,29 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.folderWidget = QLineEdit();
-        self.folderWidget.setReadOnly(True)
-        self.folderWidget.setFixedHeight(30)
-        self.folderWidget.setText(self.folder)
-
-
-        self.nameWidget = QLineEdit();
-        self.nameWidget.setFixedHeight(50)
-        f = self.nameWidget.font()
-        f.setPointSize(20)
-        self.nameWidget.setFont(f)
-        self.nameWidget.setPlaceholderText("Measurement name")
-        self.nameWidget.returnPressed.connect(self.photo)
+        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,50)
 
         self.main_layout = QGridLayout()
-
-        #self.main_layout.addWidget(self.folderWidget,0,0,1,4)
-        #self.main_layout.addWidget(self.createIconButton("Choose target folder","SP_DirIcon",self.selectFolder,30),0,4)
-        #self.main_layout.addWidget(self.createIconButton("Calibrate","SP_BrowserReload",self.calibrate,30),0,5)
-
-        #self.main_layout.addWidget(self.nameWidget,2,0,1,4)
-        self.main_layout.addWidget(self.createIconButton("Save image","SP_DialogSaveButton",self.photo,50),0,1)
-
-        #self.main_layout.addLayout(self.top_row)
-        self.main_layout.addWidget(self.image_label,0,0,4,1)
-        #self.main_layout.addLayout(self.bottom_row)
+        self.main_layout.addWidget(self.image_label,0,0,2,1)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,50),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignRight | Qt.AlignTop)
+        
 
         self.setLayout(self.main_layout)
-        self.showMaximized()
+        self.showFullScreen()
+
+    def setMode(self):
+        if self.mode == "CAMERA":
+            self.mode = "THERMAL"
+        elif self.mode == "THERMAL":
+            self.mode = "CAMERA"
+        self.thread.setMode(self.mode)
+        self.mode_button.setIcon(self.icons["mode_"+self.mode])
 
     def createIconButton(self,text,icon,action,height):
         button = QPushButton("")
         button.setToolTip(text)
-        pixmapi = getattr(QStyle.StandardPixmap, icon)
-        icon = self.style().standardIcon(pixmapi)
-        button.setIcon(icon)
+        button.setIcon(self.icons[icon])
         button.setFixedHeight(height)
         button.setFixedWidth(height)
         button.clicked.connect(action)
@@ -163,13 +164,8 @@ class ThermalPlant(QWidget):
             self.folder = filenames[0]
             self.folderWidget.setText(self.folder)
 
-    def photo(self):
-        im = Image.fromarray(self.temperatures)
-        measurement = "".join([c for c in self.nameWidget.text().replace(" ","_") if re.match(r'\w', c)])
-        filename = time.strftime("%Y%m%d_%H%M%S") + ".tiff"
-        if len(measurement) > 0:
-            filename = measurement + "." + filename
-        im.save(os.path.join(self.folder,filename))
+    def requestPhoto(self):
+        self.thread.requestOutput()
 
     def closeEvent(self, event):
         self.thread.stop()
@@ -178,26 +174,25 @@ class ThermalPlant(QWidget):
     def setup_camera(self):
         """Initialize camera.
         """
-        self.thread = VideoThread(self.video_size)
+        self.thread = VideoThread(self.video_size, self.mode)
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.display_video_stream)
-        self.thread.change_temperatures_signal.connect(self.setTemperatures)
+        self.thread.change_output_signal.connect(self.saveImage)
         # start the thread
         self.thread.start()
 
     @pyqtSlot(np.ndarray)
-    def setTemperatures(self,temps):
-        self.temperatures = temps
+    def saveImage(self,stack):
+        (r,g,b, temperatures) = cv2.split(stack)
+        camera = np.dstack((r,g,b))
+        temperatures_im = Image.fromarray(temperatures)
+        camera_im = Image.fromarray(camera)
+        filename = time.strftime("%Y%m%d_%H%M%S")
+        temperatures_im.save(os.path.join(self.folder,filename+".temperatures.tiff"))
+        camera_im.save(os.path.join(self.folder,filename+".camera.jpg"))
 
     @pyqtSlot(QPixmap)
     def display_video_stream(self,pixmap):
-        """Read frame from camera and repaint QLabel widget.
-        """
-        #(r,g,b, temperatures) = cv2.split(frames)
-        #frame = np.dstack((r,g,b))
-        #self.temperatures = temperatures
-        
-        
         currentSize = self.image_label.size()
         self.image_label.setPixmap(pixmap.scaled(currentSize,Qt.KeepAspectRatio))
 
