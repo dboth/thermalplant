@@ -143,7 +143,7 @@ class ThermalPlant(QWidget):
             QSizePolicy.MinimumExpanding,
             QSizePolicy.MinimumExpanding
         )
-        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setAlignment(Qt.AlignLeft)
 
         self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,150)
 
@@ -173,7 +173,7 @@ class ThermalPlant(QWidget):
         button.setMinimumSize(size)
         button.setFixedSize(size)
         button.clicked.connect(action)
-        button.setStyleSheet("margin: 20px; background-color: rgba(255, 255, 255, 0.5); border: 0px;")
+        button.setStyleSheet("margin: 20px; border-radius: 20px; background-color: rgba(255, 255, 255, 0.5); border: 0px;")
         return button
 
 
