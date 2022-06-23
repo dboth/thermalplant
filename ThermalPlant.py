@@ -11,9 +11,7 @@ from PIL import Image
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-#from OpenGL.GL import *
-#from OpenGL.GLU import *
-#from OpenGL.GLUT import *
+from gpiozero import CPUTemperature
 
 import utils
 import ht301_hacklib
@@ -85,7 +83,6 @@ class VideoThread(QThread):
                 thermal_frame = (np.clip(thermal_frame, 0, 1)*255).astype(np.uint8)
                 thermal_frame = cv2.applyColorMap(thermal_frame, cv2.COLORMAP_INFERNO)
                 thermal_frame = cv2.rotate(thermal_frame, cv2.ROTATE_180)
-                print(info['Tcenter_point'],info['Tmax_point'],thermal_frame.shape)
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[1]-info['Tmin_point'][0],thermal_frame.shape[0]-info['Tmin_point'][1]), info['Tmin_C'], (55,0,0))
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[1]-info['Tmax_point'][0],thermal_frame.shape[0]-info['Tmax_point'][1]), info['Tmax_C'], (0,0,85))
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[1]-info['Tcenter_point'][0],thermal_frame.shape[0]-info['Tcenter_point'][1]), info['Tcenter_C'], (0,255,255))  
@@ -151,6 +148,9 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignRight)
 
+        self.temperature_label = QLabel()
+        self.temperature_label.setAlignment(Qt.AlignRight|Qt.AlignBottom)
+
         self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,150)
 
         self.main_layout = QGridLayout()
@@ -162,9 +162,27 @@ class ThermalPlant(QWidget):
         
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
+        self.timer=QTimer()
+        self.timer.timeout.connect(self.checkTemperature)
+        self.timer.start(5000)
+
         self.setLayout(self.main_layout)
         self.setCursor(Qt.BlankCursor)
         self.showFullScreen()
+
+    def checkTemperature(self):
+        temp = CPUTemperature().temperature
+        warn_threshold = 30
+        alert_threshold = 60
+        if temp >= alert_threshold:
+            self.temperature_label.setText("Device temp: %.2f °C" % temp)
+            self.temperature_label.setStyleSheet("color: red; font-weight: bold;")
+        elif temp >= warn_threshold:
+            self.temperature_label.setText("Device temp: %.2f °C" % temp)
+            self.temperature_label.setStyleSheet("color: orange;")
+        else:
+            self.temperature_label.setText("")
+
 
     def setMode(self):
         if self.mode == "CAMERA":
