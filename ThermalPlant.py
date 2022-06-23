@@ -86,8 +86,7 @@ class VideoThread(QThread):
                 thermal_frame = cv2.rotate(thermal_frame, cv2.ROTATE_180)
                 utils.drawTemperature(thermal_frame, info['Tmin_point'], info['Tmin_C'], (55,0,0))
                 utils.drawTemperature(thermal_frame, info['Tmax_point'], info['Tmax_C'], (0,0,85))
-                utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
-                thermal_frame = cv2.cvtColor(thermal_frame, cv2.COLOR_BGR2RGB)  
+                utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))  
 
             if self.mode == "CAMERA" or self.mode == "BOTH":
                 camera_frame = original_camera_frame
@@ -99,10 +98,12 @@ class VideoThread(QThread):
             elif self.mode == "BOTH":
                 #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
                 pass
+
             
             if self.outputRequested:
                 self.change_output_signal(np.dstack((original_camera_frame,temperatures)))
                 self.outputRequested = False
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = qimage2ndarray.array2qimage(frame)
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
