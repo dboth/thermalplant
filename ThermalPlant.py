@@ -26,7 +26,7 @@ except ImportError:
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(QPixmap)
-    change_output_signal = pyqtSignal(np.ndarray)
+    change_output_signal = pyqtSignal(np.ndarray,np.ndarray)
 
     def __init__(self,video_size,mode):
         super().__init__()
@@ -101,7 +101,7 @@ class VideoThread(QThread):
 
             
             if self.outputRequested:
-                self.change_output_signal(np.dstack((original_camera_frame,temperatures)))
+                self.change_output_signal(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
                 self.outputRequested = False
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = qimage2ndarray.array2qimage(frame)
@@ -127,7 +127,7 @@ class ThermalPlant(QWidget):
             "photo": QIcon("/home/pi/thermalplant/icons/camera.png"),
             "mode_CAMERA": QIcon("/home/pi/thermalplant/icons/mode_camera.png"),
             "mode_THERMAL": QIcon("/home/pi/thermalplant/icons/mode_thermal.png"),
-            "close": QIcon("/home/pi/thermalplant/icons/delete.png"),
+            "close": QIcon("/home/pi/thermalplant/icons/shutdown.png"),
             "mode_BOTH": QIcon("/home/pi/thermalplant/icons/mode_both.png") 
         }
         self.setup_ui()
@@ -219,9 +219,13 @@ class ThermalPlant(QWidget):
         self.thread.requestOutput()
 
     def closeEvent(self, event):
-        self.thread.stop()
-        call("sudo nohup shutdown -h now", shell=True)
-        event.accept()
+        ret = QMessageBox.question(self,'', "Do you really want to shutdown the camera?", QMessageBox.Yes | QMessageBox.No)
+        if ret == QMessageBox.Yes:
+            self.thread.stop()
+            call("sudo nohup shutdown -h now", shell=True)
+            event.accept()
+        else:
+            event.ignore()
 
     def setup_camera(self):
         """Initialize camera.
@@ -233,10 +237,8 @@ class ThermalPlant(QWidget):
         # start the thread
         self.thread.start()
 
-    @pyqtSlot(np.ndarray)
-    def saveImage(self,stack):
-        (r,g,b, temperatures) = cv2.split(stack)
-        camera = np.dstack((r,g,b))
+    @pyqtSlot(np.ndarray,np.ndarray)
+    def saveImage(self,camera,temperatures):
         temperatures_im = Image.fromarray(temperatures)
         camera_im = Image.fromarray(camera)
         filename = time.strftime("%Y%m%d_%H%M%S")
