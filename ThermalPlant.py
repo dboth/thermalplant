@@ -67,8 +67,8 @@ class VideoThread(QThread):
         video_dev = self.find_device()
         self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1640)
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1232)
+        #self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1640)
+        #self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1232)
         outputRequested = False
         white = 0
         while self._run_flag:
