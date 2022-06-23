@@ -105,7 +105,7 @@ class VideoThread(QThread):
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
             self.mode = self.nextMode
-            time.sleep(0.4)
+            time.sleep(0.04)
         self.capture.release()
 
     def stop(self):
