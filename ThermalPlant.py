@@ -168,8 +168,9 @@ class ThermalPlant(QWidget):
         button = QPushButton("")
         button.setToolTip(text)
         button.setIcon(self.icons[icon])
-        button.setFixedHeight(height)
-        button.setFixedWidth(height)
+        size = QSize(height,height)
+        button.setMinimumSize(size)
+        button.setFixedSize(size)
         button.clicked.connect(action)
         button.setStyleSheet("margin: 20px")
         return button
