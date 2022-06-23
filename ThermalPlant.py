@@ -145,11 +145,11 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,180)
+        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,150)
 
         self.main_layout = QGridLayout()
         self.main_layout.addWidget(self.image_label,0,0,2,1)
-        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,180),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,150),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
         self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignRight | Qt.AlignTop)
         
 
