@@ -121,7 +121,7 @@ class ThermalPlant(QWidget):
         QWidget.__init__(self)
         self.video_size = QSize(394,292)
         self.icons = {
-            "photo": QIcon("icons/photo.png"),
+            "photo": QIcon("icons/camera.png"),
             "mode_CAMERA": QIcon("icons/mode_camera.png"),
             "mode_THERMAL": QIcon("icons/mode_thermal.png"),
             "mode_BOTH": QIcon("icons/mode_both.png") 
@@ -145,11 +145,11 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,80)
+        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,180)
 
         self.main_layout = QGridLayout()
         self.main_layout.addWidget(self.image_label,0,0,2,1)
-        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,80),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,180),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
         self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignRight | Qt.AlignTop)
         
 
@@ -172,7 +172,7 @@ class ThermalPlant(QWidget):
         button.setMinimumSize(size)
         button.setFixedSize(size)
         button.clicked.connect(action)
-        button.setStyleSheet("margin: 20px")
+        button.setStyleSheet("margin: 20px; background-color: rgba(255, 255, 255, 0.5); border: 0px;")
         return button
 
 
