@@ -124,6 +124,7 @@ class ThermalPlant(QWidget):
             "photo": QIcon("icons/camera.png"),
             "mode_CAMERA": QIcon("icons/mode_camera.png"),
             "mode_THERMAL": QIcon("icons/mode_thermal.png"),
+            "close": QIcon("icons/delete.png"),
             "mode_BOTH": QIcon("icons/mode_both.png") 
         }
         self.setup_ui()
@@ -148,9 +149,12 @@ class ThermalPlant(QWidget):
         self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,150)
 
         self.main_layout = QGridLayout()
-        self.main_layout.addWidget(self.image_label,0,0,2,1)
-        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,150),1,0,alignment=Qt.AlignLeft | Qt.AlignBottom)
-        self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignLeft | Qt.AlignTop)
+        self.main_layout.addWidget(self.image_label,0,0,3,2)
+
+        self.main_layout.addWidget(self.createIconButton("Close","close",self.close,150),0,0,alignment=Qt.AlignLeft | Qt.AlignTop)
+        self.main_layout.addWidget(self.mode_button,1,0,alignment=Qt.AlignLeft | Qt.AlignCenter)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,150),2,0,alignment=Qt.AlignLeft | Qt.AlignBottom)
+        
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
         self.setLayout(self.main_layout)
