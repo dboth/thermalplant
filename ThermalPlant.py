@@ -159,7 +159,7 @@ class ThermalPlant(QWidget):
         self.main_layout.addWidget(self.createIconButton("Close","close",self.close,150),0,0,alignment=Qt.AlignLeft | Qt.AlignTop)
         self.main_layout.addWidget(self.mode_button,1,0,alignment=Qt.AlignLeft | Qt.AlignCenter)
         self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,150),2,0,alignment=Qt.AlignLeft | Qt.AlignBottom)
-        
+        self.main_layout.addWidget(self.temperature_label,2,1,alignment=Qt.AlignRight | Qt.AlignBottom)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
         self.timer=QTimer()
