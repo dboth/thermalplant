@@ -143,7 +143,6 @@ class ThermalPlant(QWidget):
         """
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icon.ico')))
         self.setWindowTitle("Thermal Plant v0.1")
-        self.folder = str(Path.home())
 
         self.image_label = QLabel()
         self.image_label.setMinimumSize(self.video_size)
@@ -242,13 +241,22 @@ class ThermalPlant(QWidget):
         # start the thread
         self.thread.start()
 
+    def findFolder(self):
+        directory = os.fsencode("/media/pi")
+        for folder in os.listdir(directory):
+            if os.path.isdir(folder):
+                return os.path.join(directory,folder)
+        return str(Path.home())
+
     @pyqtSlot(np.ndarray,np.ndarray)
     def saveImage(self,camera,temperatures):
         temperatures_im = Image.fromarray(temperatures)
         camera_im = Image.fromarray(camera)
         filename = time.strftime("%Y%m%d_%H%M%S")
-        temperatures_im.save(os.path.join(self.folder,filename+".temperatures.tiff"))
-        camera_im.save(os.path.join(self.folder,filename+".camera.jpg"))
+        folder = self.findFolder()
+        print(folder)
+        temperatures_im.save(os.path.join(folder,filename+".temperatures.tiff"))
+        camera_im.save(os.path.join(folder,filename+".camera.jpg"))
 
     @pyqtSlot(QPixmap)
     def display_video_stream(self,pixmap):
