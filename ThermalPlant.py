@@ -66,7 +66,7 @@ class VideoThread(QThread):
         self.thermal = ht301_hacklib.HT301()
         video_dev = self.find_device()
         self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
-        self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE,0)
         outputRequested = False
         white = 0
         while self._run_flag:
