@@ -45,7 +45,7 @@ class VideoThread(QThread):
     def run(self):
         
         self.thermal = ht301_hacklib.HT301()
-        self.capture = cv2.VideoCapture("/dev/v4l/by-path/platform-bcm2835-isp-video-index0",cv2.CAP_V4L)
+        self.capture = cv2.VideoCapture("/dev/v4l/by-path/platform-bcm2835-codec-video-index0",cv2.CAP_V4L)
         print(self.capture)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
