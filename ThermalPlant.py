@@ -68,6 +68,7 @@ class VideoThread(QThread):
         self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         outputRequested = False
+        white = 0
         while self._run_flag:
             if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
@@ -104,9 +105,13 @@ class VideoThread(QThread):
             if outputRequested:
                 self.change_output_signal.emit(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
                 outputRequested = False
-                frame = (np.ones((292,394,3))*255).astype(np.uint)
+                white = 5
             else:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            if white > 0:
+                frame = (np.ones((292,394,3))*255).astype(np.uint)
+                white -= 1
             image = qimage2ndarray.array2qimage(frame)
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
