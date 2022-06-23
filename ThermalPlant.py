@@ -52,10 +52,10 @@ class VideoThread(QThread):
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
             print("MODE:",self.mode)
-            if self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
+            if True or self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
-                print(original_camera_frame)
-            if self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
+                print(type(original_camera_frame))
+            if True or self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
                 info, lut = self.thermal.info()
                 if self.outputRequested:
