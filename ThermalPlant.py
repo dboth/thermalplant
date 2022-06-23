@@ -85,6 +85,7 @@ class VideoThread(QThread):
                 thermal_frame = (np.clip(thermal_frame, 0, 1)*255).astype(np.uint8)
                 thermal_frame = cv2.applyColorMap(thermal_frame, cv2.COLORMAP_INFERNO)
                 thermal_frame = cv2.rotate(thermal_frame, cv2.ROTATE_180)
+                print(info['Tcenter_point'],info['Tmax_point'],thermal_frame.shape)
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[0]-info['Tmin_point'][0],thermal_frame.shape[1]-info['Tmin_point'][1]), info['Tmin_C'], (55,0,0))
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[0]-info['Tmax_point'][0],thermal_frame.shape[1]-info['Tmax_point'][1]), info['Tmax_C'], (0,0,85))
                 utils.drawTemperature(thermal_frame, (thermal_frame.shape[0]-info['Tcenter_point'][0],thermal_frame.shape[1]-info['Tcenter_point'][1]), info['Tcenter_C'], (0,255,255))  
