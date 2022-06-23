@@ -45,10 +45,7 @@ class VideoThread(QThread):
     def run(self):
         
         self.thermal = ht301_hacklib.HT301()
-        try:
-            self.capture = cv2.VideoCapture(0)
-        except:
-            self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
+        self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
             print("MODE:",self.mode)
