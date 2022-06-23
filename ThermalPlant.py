@@ -71,11 +71,13 @@ class VideoThread(QThread):
                 thermal_frame = cv2.cvtColor(thermal_frame, cv2.COLOR_BGR2RGB)  
 
             if self.mode == "CAMERA" or self.mode == "BOTH":
+                print(original_camera_frame.shape)
                 camera_frame = original_camera_frame
 
             if self.mode == "THERMAL":
                 frame = thermal_frame
             elif self.mode == "CAMERA":
+                print(camera_frame.shape)
                 frame = camera_frame
             elif self.mode == "BOTH":
                 #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
