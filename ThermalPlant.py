@@ -176,10 +176,10 @@ class ThermalPlant(QWidget):
         alert_threshold = 60
         if temp >= alert_threshold:
             self.temperature_label.setText("Device temp: %.2f °C" % temp)
-            self.temperature_label.setStyleSheet("color: red; font-weight: bold;")
+            self.temperature_label.setStyleSheet("margin: 10px; font-size: 20px; color: red; background-color: rgba(255, 255, 255, 0.5); font-weight: bold;")
         elif temp >= warn_threshold:
             self.temperature_label.setText("Device temp: %.2f °C" % temp)
-            self.temperature_label.setStyleSheet("color: orange;")
+            self.temperature_label.setStyleSheet("margin: 10px; font-size: 20px;  color: orange; background-color: rgba(255, 255, 255, 0.5);")
         else:
             self.temperature_label.setText("")
 
