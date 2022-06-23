@@ -42,20 +42,20 @@ class VideoThread(QThread):
     def setMode(self,mode):
         self.nextMode = mode
 
-    def isHt301(self, cap):
+    def isPiCam(self, cap):
         if not cap.isOpened():
             return False
         w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
         h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         print('width:', w, 'height:', h)
-        if w == self.FRAME_WIDTH and h == self.FRAME_HEIGHT: return True
+        if w == 640 and h == 480: return True
         return False
 
     def find_device(self):
         for i in range(10):
             print('testing device nr:',i)
             cap = cv2.VideoCapture(i,cv2.CAP_V4L)
-            ok = self.isHt301(cap)
+            ok = self.isPiCam(cap)
             cap.release()
             if ok: return i
         raise Exception("HT301 device not found!")
@@ -65,14 +65,11 @@ class VideoThread(QThread):
         
         self.thermal = ht301_hacklib.HT301()
         video_dev = self.find_device()
-        self.capture = cv2.VideoCapture("/dev/video2",cv2.CAP_V4L)
-        print(self.capture)
+        self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
-            print("MODE:",self.mode)
             if True or self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
-                print(type(original_camera_frame))
             if True or self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
                 info, lut = self.thermal.info()
@@ -90,15 +87,12 @@ class VideoThread(QThread):
                 utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
                 thermal_frame = cv2.cvtColor(thermal_frame, cv2.COLOR_BGR2RGB)  
 
-            print("MODE 2:",self.mode)
             if self.mode == "CAMERA" or self.mode == "BOTH":
-                print(original_camera_frame.shape)
                 camera_frame = original_camera_frame
 
             if self.mode == "THERMAL":
                 frame = thermal_frame
             elif self.mode == "CAMERA":
-                print(camera_frame.shape)
                 frame = camera_frame
             elif self.mode == "BOTH":
                 #frame = cv2.resize(frame, (self.video_size.width(), self.video_size.height()))
@@ -111,7 +105,7 @@ class VideoThread(QThread):
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
             self.mode = self.nextMode
-            time.sleep(0.6)
+            time.sleep(0.4)
         self.capture.release()
 
     def stop(self):
