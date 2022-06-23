@@ -42,10 +42,30 @@ class VideoThread(QThread):
     def setMode(self,mode):
         self.nextMode = mode
 
+    def isHt301(self, cap):
+        if not cap.isOpened():
+            return False
+        w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        print('width:', w, 'height:', h)
+        if w == self.FRAME_WIDTH and h == self.FRAME_HEIGHT: return True
+        return False
+
+    def find_device(self):
+        for i in range(10):
+            print('testing device nr:',i)
+            cap = cv2.VideoCapture(i,cv2.CAP_V4L)
+            ok = self.isHt301(cap)
+            cap.release()
+            if ok: return i
+        raise Exception("HT301 device not found!")
+
+
     def run(self):
         
         self.thermal = ht301_hacklib.HT301()
-        self.capture = cv2.VideoCapture("/dev/v4l/by-path/platform-bcm2835-codec-video-index0",cv2.CAP_V4L)
+        video_dev = self.find_device()
+        self.capture = cv2.VideoCapture("/dev/video2",cv2.CAP_V4L)
         print(self.capture)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
