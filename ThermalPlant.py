@@ -104,7 +104,9 @@ class VideoThread(QThread):
             if outputRequested:
                 self.change_output_signal.emit(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
                 outputRequested = False
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = (np.ones((292,394,3))*255).astype(np.uint)
+            else:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = qimage2ndarray.array2qimage(frame)
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
