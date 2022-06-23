@@ -145,11 +145,11 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,180)
+        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,100)
 
         self.main_layout = QGridLayout()
         self.main_layout.addWidget(self.image_label,0,0,2,1)
-        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,180),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,100),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
         self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignRight | Qt.AlignTop)
         
 
@@ -168,11 +168,12 @@ class ThermalPlant(QWidget):
         button = QPushButton("")
         button.setToolTip(text)
         button.setIcon(self.icons[icon])
+        button.setIconSize(QSize(int(height*0.8),int(height*0.8)))
         size = QSize(height,height)
         button.setMinimumSize(size)
         button.setFixedSize(size)
         button.clicked.connect(action)
-        button.setStyleSheet("margin: 20px; background-color: rgba(255, 255, 255, 0.5); border: 0px;")
+        button.setStyleSheet("margin: 20px; border-radius:"+str(int(height/2))+"px; background-color: rgba(255, 255, 255, 0.5); border: 0px;")
         return button
 
 
