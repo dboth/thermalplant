@@ -172,14 +172,14 @@ class ThermalPlant(QWidget):
 
     def checkTemperature(self):
         temp = CPUTemperature().temperature
-        warn_threshold = 30
-        alert_threshold = 60
+        warn_threshold = 55
+        alert_threshold = 65
         if temp >= alert_threshold:
-            self.temperature_label.setText("Device temp: %.2f °C" % temp)
-            self.temperature_label.setStyleSheet("margin: 10px; font-size: 20px; color: red; background-color: rgba(255, 255, 255, 0.5); font-weight: bold;")
+            self.temperature_label.setText("!! Device temp: %.2f °C !!" % temp)
+            self.temperature_label.setStyleSheet("margin: 10px; font-size: 20px; color: red; background-color: rgba(0,0,0, 0.7); font-weight: bold;")
         elif temp >= warn_threshold:
             self.temperature_label.setText("Device temp: %.2f °C" % temp)
-            self.temperature_label.setStyleSheet("margin: 10px; font-size: 20px;  color: orange; background-color: rgba(255, 255, 255, 0.5);")
+            self.temperature_label.setStyleSheet("margin: 10px; font-size: 15px;  color: orange; background-color: rgba(0,0,0, 0.7);")
         else:
             self.temperature_label.setText("")
 
