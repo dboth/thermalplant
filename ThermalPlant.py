@@ -2,6 +2,7 @@
 
 from ensurepip import version
 import os, re, sys, time, qimage2ndarray
+from cv2 import ROTATE_90_CLOCKWISE
 from pathlib import Path
 
 import cv2
@@ -70,14 +71,14 @@ class VideoThread(QThread):
         while self._run_flag:
             if True or self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
+                original_camera_frame = cv2.rotate(original_camera_frame, cv2.ROTATE_90_CLOCKWISE)
             if True or self.outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
                 info, lut = self.thermal.info()
                 if self.outputRequested:
-                    temperatures = lut[thermal_frame]
+                    temperatures = (lut[thermal_frame])[::-1,::-1]
             
             if self.mode == "THERMAL" or self.mode == "BOTH":
-                thermal_frame = thermal_frame[::-1,::-1]
                 thermal_frame = thermal_frame.astype(np.float32)
                 thermal_frame -= thermal_frame.min()
                 thermal_frame /= thermal_frame.max()
