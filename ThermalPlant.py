@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PIL import Image
+from subprocess import call
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -219,6 +220,7 @@ class ThermalPlant(QWidget):
 
     def closeEvent(self, event):
         self.thread.stop()
+        call("sudo nohup shutdown -h now", shell=True)
         event.accept()
 
     def setup_camera(self):
