@@ -51,6 +51,7 @@ class VideoThread(QThread):
             self.capture = cv2.VideoCapture(-1,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,3)
         while self._run_flag:
+            print("MODE:",self.mode)
             if self.outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 _, original_camera_frame = self.capture.read()
                 print(original_camera_frame)
@@ -71,6 +72,7 @@ class VideoThread(QThread):
                 utils.drawTemperature(thermal_frame, info['Tcenter_point'], info['Tcenter_C'], (0,255,255))
                 thermal_frame = cv2.cvtColor(thermal_frame, cv2.COLOR_BGR2RGB)  
 
+            print("MODE 2:",self.mode)
             if self.mode == "CAMERA" or self.mode == "BOTH":
                 print(original_camera_frame.shape)
                 camera_frame = original_camera_frame
