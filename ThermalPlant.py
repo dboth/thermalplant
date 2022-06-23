@@ -168,7 +168,7 @@ class ThermalPlant(QWidget):
         button = QPushButton("")
         button.setToolTip(text)
         button.setIcon(self.icons[icon])
-        button.setIconSize(QSize(int(height*0.8),int(height*0.8)))
+        #button.setIconSize(QSize(int(height*0.8),int(height*0.8)))
         size = QSize(height,height)
         button.setMinimumSize(size)
         button.setFixedSize(size)
