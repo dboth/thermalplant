@@ -145,11 +145,11 @@ class ThermalPlant(QWidget):
         )
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,50)
+        self.mode_button = self.createIconButton("Toggle mode","mode_"+self.mode,self.setMode,80)
 
         self.main_layout = QGridLayout()
         self.main_layout.addWidget(self.image_label,0,0,2,1)
-        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,50),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.main_layout.addWidget(self.createIconButton("Save image","photo",self.requestPhoto,80),1,0,alignment=Qt.AlignRight | Qt.AlignBottom)
         self.main_layout.addWidget(self.mode_button,0,0,alignment=Qt.AlignRight | Qt.AlignTop)
         
 
@@ -171,6 +171,7 @@ class ThermalPlant(QWidget):
         button.setFixedHeight(height)
         button.setFixedWidth(height)
         button.clicked.connect(action)
+        button.setStyleSheet("margin: 20px")
         return button
 
 
