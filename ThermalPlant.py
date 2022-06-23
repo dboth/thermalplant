@@ -101,7 +101,7 @@ class VideoThread(QThread):
 
             
             if self.outputRequested:
-                self.change_output_signal(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
+                self.change_output_signal.emit(cv2.cvtColor(original_camera_frame,cv2.COLOR_BGR2RGB),temperatures)
                 self.outputRequested = False
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = qimage2ndarray.array2qimage(frame)
