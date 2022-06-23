@@ -123,11 +123,11 @@ class ThermalPlant(QWidget):
         QWidget.__init__(self)
         self.video_size = QSize(394,292)
         self.icons = {
-            "photo": QIcon("icons/camera.png"),
-            "mode_CAMERA": QIcon("icons/mode_camera.png"),
-            "mode_THERMAL": QIcon("icons/mode_thermal.png"),
-            "close": QIcon("icons/delete.png"),
-            "mode_BOTH": QIcon("icons/mode_both.png") 
+            "photo": QIcon("/home/pi/thermalplant/icons/camera.png"),
+            "mode_CAMERA": QIcon("/home/pi/thermalplant/icons/mode_camera.png"),
+            "mode_THERMAL": QIcon("/home/pi/thermalplant/icons/mode_thermal.png"),
+            "close": QIcon("/home/pi/thermalplant/icons/delete.png"),
+            "mode_BOTH": QIcon("/home/pi/thermalplant/icons/mode_both.png") 
         }
         self.setup_ui()
         self.setup_camera()
