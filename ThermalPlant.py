@@ -260,7 +260,6 @@ class ThermalPlant(QWidget):
         camera_im = Image.fromarray(camera)
         filename = time.strftime("%Y%m%d_%H%M%S")
         folder = self.findFolder()
-        print(folder)
         temperatures_im.save(os.path.join(folder,filename+".temperatures.tiff"))
         camera_im.save(os.path.join(folder,filename+".camera.jpg"))
 
