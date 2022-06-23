@@ -33,13 +33,14 @@ class VideoThread(QThread):
         self.video_size = video_size
         self._run_flag = True
         self.mode = mode
+        self.nextMode = mode
         self.outputRequested = False
 
     def requestOutput(self):
         self.outputRequested = True
 
     def setMode(self,mode):
-        self.mode = mode
+        self.nextMode = mode
 
     def run(self):
         
@@ -86,6 +87,7 @@ class VideoThread(QThread):
             image = qimage2ndarray.array2qimage(frame)
             pixmap = QPixmap.fromImage(image)
             self.change_pixmap_signal.emit(pixmap)
+            self.mode = self.nextMode
             time.sleep(0.6)
         self.capture.release()
 
