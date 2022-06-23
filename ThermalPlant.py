@@ -244,8 +244,9 @@ class ThermalPlant(QWidget):
     def findFolder(self):
         directory = os.fsencode("/media/pi")
         for folder in os.listdir(directory):
-            if os.path.isdir(folder):
-                return os.path.join(directory,folder)
+            xxx = os.path.join(directory,folder)
+            if os.path.isdir(xxx):
+                return xxx
         return str(Path.home())
 
     @pyqtSlot(np.ndarray,np.ndarray)
