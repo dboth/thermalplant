@@ -4,7 +4,7 @@ from ensurepip import version
 import os, re, sys, time, qimage2ndarray
 from cv2 import ROTATE_90_CLOCKWISE
 from pathlib import Path
-from picamera import PiCamera
+
 
 import cv2
 import numpy as np
@@ -17,6 +17,8 @@ from gpiozero import CPUTemperature
 
 import utils
 import ht301_hacklib
+
+from picamera import PiCamera
 
 try:
     from ctypes import windll  # Only exists on Windows.
