@@ -19,6 +19,7 @@ import utils
 import ht301_hacklib
 
 from picamera import PiCamera
+from picamera.array import PiRGBArray
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -70,7 +71,8 @@ class VideoThread(QThread):
             isPiCam = True
             self.camera = PiCamera()
             self.camera.resolution = camera_resolution
-            self.camera.framerate = 24
+            self.camera.framerate = 25
+            self.rawCapture = PiRGBArray(self.camera, size=camera_resolution)
         except:
             isPiCam = False
             video_dev = self.find_device()
@@ -81,11 +83,11 @@ class VideoThread(QThread):
         self.thermal = ht301_hacklib.HT301()
         outputRequested = False
         white = 0
-        image = np.empty((camera_resolution[1] * camera_resolution[0] * 3,), dtype=np.uint8)
-        for i in self.camera.capture_continuous(image,"bgr"):
+        time.sleep(0.1)
+        for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
             if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 if isPiCam:
-                    original_camera_frame = image.reshape((camera_resolution[1], camera_resolution[0], 3))
+                    original_camera_frame = frame.array
                 else:
                     _, original_camera_frame = self.capture.read()
                 original_camera_frame = cv2.rotate(original_camera_frame, cv2.ROTATE_180)
@@ -134,8 +136,9 @@ class VideoThread(QThread):
             self.mode = self.nextMode
             outputRequested = self.outputRequested
             self.outputRequested = False
-            time.sleep(0.04)
-        self.capture.release()
+            self.rawCapture.truncate(0)
+            #time.sleep(0.04)
+        #self.capture.release()
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
