@@ -109,7 +109,7 @@ class VideoThread(QThread):
                 outputRequested = False
                 white = 5
             else:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = frame#cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             if white > 0:
                 frame = (np.ones((292,394,3))*255).astype(np.uint)
