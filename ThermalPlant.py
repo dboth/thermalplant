@@ -68,7 +68,7 @@ class VideoThread(QThread):
         self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1920)
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1088)
         outputRequested = False
         white = 0
         while self._run_flag:
@@ -109,7 +109,7 @@ class VideoThread(QThread):
                 outputRequested = False
                 white = 5
             else:
-                frame = frame#cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             if white > 0:
                 frame = (np.ones((292,394,3))*255).astype(np.uint)
@@ -158,7 +158,7 @@ class ThermalPlant(QWidget):
             QSizePolicy.MinimumExpanding,
             QSizePolicy.MinimumExpanding
         )
-        self.image_label.setAlignment(Qt.AlignRight)
+        self.image_label.setAlignment(Qt.AlignRight|Qt.AlignCenter)
 
         self.temperature_label = QLabel()
         self.temperature_label.setAlignment(Qt.AlignRight|Qt.AlignBottom)
