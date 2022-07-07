@@ -65,7 +65,7 @@ class VideoThread(QThread):
 
 
     def run(self):
-        camera_resolution = (1640,1232)
+        camera_resolution = (1920,1080)
         try:
             isPiCam = True
             self.camera = PiCamera()
@@ -81,11 +81,10 @@ class VideoThread(QThread):
         self.thermal = ht301_hacklib.HT301()
         outputRequested = False
         white = 0
-        while self._run_flag:
+        image = np.empty((camera_resolution[1] * camera_resolution[0] * 3,), dtype=np.uint8)
+        for i in self.camera.capture_continuous(image,"bgr"):
             if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
                 if isPiCam:
-                    image = np.empty((camera_resolution[1] * camera_resolution[0] * 3,), dtype=np.uint8)
-                    self.camera.capture(image, 'bgr')
                     original_camera_frame = image.reshape((camera_resolution[1], camera_resolution[0], 3))
                 else:
                     _, original_camera_frame = self.capture.read()
