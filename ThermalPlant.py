@@ -5,7 +5,6 @@ import os, re, sys, time, qimage2ndarray
 from cv2 import ROTATE_90_CLOCKWISE
 from pathlib import Path
 
-
 import cv2
 import numpy as np
 from PIL import Image
@@ -17,9 +16,6 @@ from gpiozero import CPUTemperature
 
 import utils
 import ht301_hacklib
-
-from picamera import PiCamera
-from picamera.array import PiRGBArray
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -66,30 +62,18 @@ class VideoThread(QThread):
 
 
     def run(self):
-        camera_resolution = (1920,1080)
-        try:
-            isPiCam = True
-            self.camera = PiCamera()
-            self.camera.resolution = camera_resolution
-            self.camera.framerate = 25
-            self.rawCapture = PiRGBArray(self.camera, size=camera_resolution)
-        except:
-            isPiCam = False
-            video_dev = self.find_device()
-            self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
-            self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
-            self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1640)
-            self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1232)
+        
         self.thermal = ht301_hacklib.HT301()
+        video_dev = self.find_device()
+        self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1920)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1080)
         outputRequested = False
         white = 0
-        time.sleep(0.1)
-        for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+        while self._run_flag:
             if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
-                if isPiCam:
-                    original_camera_frame = frame.array
-                else:
-                    _, original_camera_frame = self.capture.read()
+                _, original_camera_frame = self.capture.read()
                 original_camera_frame = cv2.rotate(original_camera_frame, cv2.ROTATE_180)
             if True or outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
@@ -136,9 +120,8 @@ class VideoThread(QThread):
             self.mode = self.nextMode
             outputRequested = self.outputRequested
             self.outputRequested = False
-            self.rawCapture.truncate(0)
-            #time.sleep(0.04)
-        #self.capture.release()
+            time.sleep(0.04)
+        self.capture.release()
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
