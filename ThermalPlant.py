@@ -4,6 +4,7 @@ from ensurepip import version
 import os, re, sys, time, qimage2ndarray
 from cv2 import ROTATE_90_CLOCKWISE
 from pathlib import Path
+from picamera import PiCamera
 
 import cv2
 import numpy as np
@@ -62,18 +63,30 @@ class VideoThread(QThread):
 
 
     def run(self):
-        
+        camera_resolution = (1640,1232)
+        try:
+            isPiCam = True
+            self.camera = PiCamera()
+            self.camera.resolution = camera_resolution
+            self.camera.framerate = 24
+        except:
+            isPiCam = False
+            video_dev = self.find_device()
+            self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
+            self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
+            self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1640)
+            self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1232)
         self.thermal = ht301_hacklib.HT301()
-        video_dev = self.find_device()
-        self.capture = cv2.VideoCapture(video_dev,cv2.CAP_V4L)
-        self.capture.set(cv2.CAP_PROP_BUFFERSIZE,1)
-        #self.capture.set(cv2.CAP_PROP_FRAME_WIDTH,1640)
-        #self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,1232)
         outputRequested = False
         white = 0
         while self._run_flag:
             if True or outputRequested or self.mode == "CAMERA" or self.mode == "BOTH":
-                _, original_camera_frame = self.capture.read()
+                if isPiCam:
+                    image = np.empty((camera_resolution[1] * camera_resolution[0] * 3,), dtype=np.uint8)
+                    self.camera.capture(image, 'bgr')
+                    original_camera_frame = image.reshape((camera_resolution[1], camera_resolution[0], 3))
+                else:
+                    _, original_camera_frame = self.capture.read()
                 original_camera_frame = cv2.rotate(original_camera_frame, cv2.ROTATE_180)
             if True or outputRequested or self.mode == "THERMAL" or self.mode == "BOTH":
                 _, thermal_frame = self.thermal.read()
